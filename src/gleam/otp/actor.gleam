@@ -404,13 +404,16 @@ pub fn named(
 
 fn exit_process(reason: ExitReason) -> ExitReason {
   case reason {
-    Abnormal(reason) -> process.send_abnormal_exit(process.self(), reason)
+    Abnormal(reason) -> exit(reason)
     Killed -> process.kill(process.self())
     _ -> Nil
   }
 
   reason
 }
+
+@external(erlang, "erlang", "exit")
+fn exit(reason: Dynamic) -> never
 
 fn receive_message(self: Self(state, msg)) -> Message(msg) {
   let selector = case self.mode {

@@ -7,6 +7,9 @@
 - The `gleam/otp/static_supervisor` module's `start` function now returns
   `InitExited(Abnormal(reason))` holding the supervisor's whole exit reason
   instead of `InitFailed("shutdown")`.
+- Fixed a bug where an actor that traps exits would exit with `Normal` after
+  `actor.stop_abnormal`. Stopping an actor abnormally now writes a crash report
+  to the logger, as it does for other OTP processes.
 
 ## v1.3.0 - 2026-08-09
 

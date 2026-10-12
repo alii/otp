@@ -322,6 +322,37 @@ pub fn abnormal_stop_exits_linked_test() {
   )
 }
 
+pub fn abnormal_stop_when_trapping_exits_test() {
+  process.trap_exits(True)
+
+  let exits =
+    process.new_selector()
+    |> process.select_trapped_exits(function.identity)
+
+  // this actor enables trapping exits and then exits with an abnormal reason
+  let assert Ok(actor) =
+    actor.new_with_initialiser(50, fn(subject) {
+      process.trap_exits(True)
+      actor.initialised(Nil)
+      |> actor.returning(subject)
+      |> Ok
+    })
+    |> actor.on_message(fn(_, _) { actor.stop_abnormal("wibble") })
+    |> actor.start
+
+  process.send(actor.data, "okay")
+
+  let trapped_reason = process.selector_receive(exits, 10)
+
+  trapped_reason
+  |> should.equal(
+    Ok(process.ExitMessage(
+      actor.pid,
+      process.Abnormal(dynamic.string("wibble")),
+    )),
+  )
+}
+
 fn mapped_selector(
   selector: process.Selector(ActorMessage),
   mapper: fn(a) -> ActorMessage,
